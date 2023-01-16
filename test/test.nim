@@ -68,6 +68,18 @@ if isMainModule:
   if LM_FindModuleEx(procbuf.addr, "libc.so.6", modbuf.addr) == LM_TRUE:
     echo modbuf.getName, ": ", modbuf.base.toHex()
 
-  # LM_LoadModule / LM_UnloadModule
+  # LM_LoadModulE
   discard LM_LoadModule((getCurrentDir() & "/libtestlib.so").cstring, modbuf.addr)
+  
+  #[ 
+  Unloading currently doesn't works on linux
+  
   echo "Unload: ", LM_UnloadModule(modbuf.addr) == LM_TRUE
+  var currentProcess: lm_process_t
+  discard LM_FindProcess("test", currentProcess.addr)
+  echo LM_UnloadModuleEx(currentProcess.addr, modbuf.addr) == LM_TRUE
+  ]#
+  discard LM_FindModule("libmem.so", modbuf.addr)
+  for s in LM_EnumSymbols(modbuf.addr):
+    echo s.name, " ", s.address.toHex()
+

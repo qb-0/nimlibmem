@@ -38,6 +38,10 @@ type
   lm_thread_t* {.byref.} = object
     tid*: lm_tid_t
 
+  lm_symbol_t* = object
+    name*: cstring
+    address*: lm_address_t
+
 proc getName*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.name[0].unsafeAddr)
 proc getPath*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.path[0].unsafeAddr)
 
@@ -45,6 +49,7 @@ var
   processList: seq[lm_process_t]
   moduleList: seq[lm_module_t]
   threadList: seq[lm_thread_t]
+  symbolList: seq[lm_symbol_t]
 
 {.push dynlib: libName, cdecl, importc.}
 proc LM_EnumProcesses*(callback: proc(pproc: ptr lm_process_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
@@ -64,7 +69,8 @@ proc LM_FindModuleEx*(pproc: ptr lm_process_t, name: lm_string_t, modbuf: ptr lm
 proc LM_LoadModule*(path: lm_string_t, modbuf: ptr lm_module_t): lm_bool_t
 proc LM_LoadModuleEx*(pproc: ptr lm_process_t, path: lm_string_t, modbuf: ptr lm_module_t): lm_module_t
 proc LM_UnloadModule*(pmod: ptr lm_module_t): lm_bool_t
-proc LM_UnloadModuleEx*(pmod: ptr lm_module_t): lm_bool_t
+proc LM_UnloadModuleEx*(pproc: ptr lm_process_t, pmod: ptr lm_module_t): lm_bool_t
+proc LM_EnumSymbols*(pmod: ptr lm_module_t, callback: proc(psymbol: ptr lm_symbol_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 {.pop.}
 
 # Callbacks / Iterators helpers
@@ -79,6 +85,10 @@ proc enumThreadsCallback(pthr: ptr lm_thread_t, arg: pointer): lm_bool_t =
 
 proc enumModulesCallback(pmod: ptr lm_module_t, arg: pointer): lm_bool_t =
   moduleList.add(pmod[])
+  result = LM_TRUE
+
+proc enumSymbolsCallback(psymbol: ptr lm_symbol_t, arg: pointer): lm_bool_t =
+  symbolList.add(psymbol[])
   result = LM_TRUE
 
 iterator LM_EnumProcesses*: lm_process_t =
@@ -110,3 +120,9 @@ iterator LM_EnumModulesEx*(pproc: ptr lm_process_t): lm_module_t =
   if LM_EnumModulesEx(pproc, enumModulesCallback, nil) == LM_TRUE:
     for m in moduleList:
       yield m
+
+iterator LM_EnumSymbols*(pmod: ptr lm_module_t): lm_symbol_t =
+  symbolList.setLen(0)
+  if LM_EnumSymbols(pmod, enumSymbolsCallback, nil) == LM_TRUE:
+    for s in symbolList:
+      yield s
