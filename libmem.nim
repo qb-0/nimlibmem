@@ -49,8 +49,6 @@ type
     size*: lm_size_t
     prot*: lm_prot_t
 
-
-
 proc getName*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.name[0].unsafeAddr)
 proc getPath*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.path[0].unsafeAddr)
 
