@@ -58,7 +58,7 @@ proc LM_EnumModulesEx*(pproc: ptr lm_process_t, callback: proc(pmod: lm_module_t
 proc LM_FindModule*(name: lm_string_t, modbuf: ptr lm_module_t): lm_bool_t
 proc LM_FindModuleEx*(pproc: ptr lm_process_t, name: lm_string_t, modbuf: ptr lm_module_t): lm_bool_t
 proc LM_LoadModule*(path: lm_string_t, modbuf: ptr lm_module_t): lm_bool_t
-proc LM_LoadModuleEx*(pproc: ptr lm_process_t, path: lm_string_t, modbuf: lm_module_t): lm_module_t
+proc LM_LoadModuleEx*(pproc: ptr lm_process_t, path: lm_string_t, modbuf: ptr lm_module_t): lm_module_t
 proc LM_UnloadModule*(pmod: ptr lm_module_t): lm_bool_t
 proc LM_UnloadModuleEx*(pmod: ptr lm_module_t): lm_bool_t
 {.pop.}

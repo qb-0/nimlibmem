@@ -59,5 +59,11 @@ if isMainModule:
   if LM_FindModuleEx(procbuf.addr, "libc.so.6", modbuf.addr) == LM_TRUE:
     echo modbuf.getName, ": ", modbuf.base.toHex()
 
-  # LM_LoadModule
+  # LM_LoadModule / LM_UnloadModule
   discard LM_LoadModule((getCurrentDir() & "/libtestlib.so").cstring, modbuf.addr)
+  echo "Unload: ", LM_UnloadModule(modbuf.addr) == LM_TRUE
+
+  # LM_UnloadModule / LM_LoadModuleEx
+  #var currentProc: lm_process_t
+  #discard LM_GetProcess(currentproc.addr)
+  #discard LM_LoadModuleEx(currentProc.addr, (getCurrentDir() & "/libtestlib.so").cstring, modbuf.addr)
