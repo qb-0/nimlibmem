@@ -1,5 +1,5 @@
 const 
-  libName = when defined(linux): "libmem.so" elif defined(windows): "libmem.dll"
+  libName = when defined(linux): "liblibmem.so" elif defined(windows): "libmem.dll"
 
 type
   lm_bool_t* = int32
@@ -35,13 +35,16 @@ type
     path*: array[LM_PATH_MAX, lm_char_t]
     name*: array[LM_PATH_MAX, lm_char_t]
 
+  lm_thread_t* = object
+    tid*: lm_tid_t
+
 proc getName*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.name[0].unsafeAddr)
 proc getPath*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.path[0].unsafeAddr)
 
 var 
   processList: seq[lm_process_t]
   moduleList: seq[lm_module_t]
-  threadIdList: seq[lm_tid_t]
+  threadList: seq[lm_thread_t]
 
 {.push dynlib: libName, cdecl, importc.}
 proc LM_EnumProcesses*(callback: proc(pproc: lm_process_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
@@ -49,10 +52,11 @@ proc LM_GetProcess*(procbuf: ptr lm_process_t): lm_bool_t
 proc LM_FindProcess*(procstr: lm_string_t, procbuf: ptr lm_process_t): lm_bool_t
 proc LM_IsProcessAlive*(pproc: ptr lm_process_t): lm_bool_t
 proc LM_GetSystemBits*: lm_size_t
-proc LM_EnumThreadIds*(callback: proc(tid: lm_tid_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
-proc LM_EnumThreadIdsEx*(pproc: ptr lm_process_t, callback: proc(tid: lm_tid_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
-proc LM_GetThreadId*: lm_tid_t
-proc LM_GetThreadIdEx*(pproc: ptr lm_process_t): lm_tid_t
+proc LM_EnumThreads*(callback: proc(pthr: lm_thread_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
+proc LM_EnumThreadsEx*(pproc: ptr lm_process_t, callback: proc(pthr: lm_thread_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
+proc LM_GetThread*(thrbuf: ptr lm_thread_t): lm_bool_t
+proc LM_GetThreadProcess*(pthr: ptr lm_thread_t, procbuf: ptr lm_process_t): lm_bool_t
+proc LM_GetThreadEx*(pproc: ptr lm_process_t, thrbuf: ptr lm_thread_t): lm_bool_t
 proc LM_EnumModules*(callback: proc(pmod: lm_module_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_EnumModulesEx*(pproc: ptr lm_process_t, callback: proc(pmod: lm_module_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_FindModule*(name: lm_string_t, modbuf: ptr lm_module_t): lm_bool_t
@@ -69,8 +73,8 @@ proc enumProcessCallback(pproc: lm_process_t, arg: pointer): lm_bool_t =
   processList.add(pproc)
   result = LM_TRUE
 
-proc enumThreadIdsCallback(tid: lm_tid_t, arg: pointer): lm_bool_t =
-  threadIdList.add(tid)
+proc enumThreadsCallback(pthr: lm_thread_t, arg: pointer): lm_bool_t =
+  threadList.add(pthr)
   result = LM_TRUE
 
 proc enumModulesCallback(pmod: lm_module_t, arg: pointer): lm_bool_t =
@@ -83,16 +87,16 @@ iterator LM_EnumProcesses*: lm_process_t =
     for p in processList:
       yield p
 
-iterator LM_EnumThreadIds*: lm_tid_t =
-  threadIdList.setLen(0)
-  if LM_EnumThreadIds(enumThreadIdsCallback, nil) == LM_TRUE:
-    for t in threadIdList:
+iterator LM_EnumThreads*: lm_thread_t =
+  threadList.setLen(0)
+  if LM_EnumThreads(enumThreadsCallback, nil) == LM_TRUE:
+    for t in threadList:
       yield t
 
-iterator LM_EnumThreadIdsEx*(pproc: ptr lm_process_t): lm_tid_t =
-  threadIdList.setLen(0)
-  if LM_EnumThreadIdsEx(pproc, enumThreadIdsCallback, nil) == LM_TRUE:
-    for t in threadIdList:
+iterator LM_EnumThreadsEx*(pproc: ptr lm_process_t): lm_thread_t =
+  threadList.setLen(0)
+  if LM_EnumThreadsEx(pproc, enumThreadsCallback, nil) == LM_TRUE:
+    for t in threadList:
       yield t
 
 iterator LM_EnumModules*: lm_module_t =

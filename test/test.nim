@@ -9,10 +9,11 @@ if isMainModule:
   var 
     procbuf: lm_process_t
     modbuf: lm_module_t
+    thrbuf: lm_thread_t
 
   # LM_EnumProcesses
   for p in LM_EnumProcesses():
-    echo p.pid, " ", p.getName, " ", p.getPath
+    echo p.pid, "|", p.getName, "|", p.getPath
 
   # LM_GetProcess
   discard LM_GetProcess(procbuf.addr)
@@ -23,24 +24,26 @@ if isMainModule:
     echo procbuf.pid, " ", procbuf.getPath
 
   # LM_IsProcessAlive
-  echo testProcess, " Alive: ", LM_IsProcessAlive(procbuf.addr) == LM_TRUE
+  echo testProcess, " alive: ", LM_IsProcessAlive(procbuf.addr) == LM_TRUE
 
   # LM_GetSystemBits
   echo "Systembits: ", LM_GetSystemBits()
 
-  # LM_EnumThreadIds
-  for t in LM_EnumThreadIds():
+  # LM_EnumThreads
+  for t in LM_EnumThreads():
     echo t
 
-  # LM_EnumThreadIdsEx
-  for t in LM_EnumThreadIdsEx(procbuf.addr):
-    echo testProcess, " ThreadID: ", t
+  # LM_EnumThreadsEx
+  for t in LM_EnumThreadsEx(procbuf.addr):
+    echo testProcess, " Thread: ", t
 
-  # LM_GetThreadId
-  echo "Current ThreadID: ", LM_GetThreadId()
+  # LM_GetThread
+  discard LM_GetThread(thrbuf.addr)
+  echo "Current Thread: ", thrbuf
 
-  # LM_GetThreadIdEx
-  echo testProcess, " ", LM_GetThreadIdEx(procbuf.addr)
+  # LM_GetThreadEx
+  discard LM_GetThreadEx(procbuf.addr, thrbuf.addr)
+  echo testProcess, " ", thrbuf
 
   # LM_EnumModules
   for m in LM_EnumModules():
