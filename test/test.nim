@@ -83,3 +83,13 @@ if isMainModule:
   for s in LM_EnumSymbols(modbuf.addr):
     echo s.name, " ", s.address.toHex()
 
+  # LM_FindSymbolAddress
+  echo LM_FindSymbolAddress(modbuf.addr, "LM_ReadMemoryEx").toHex()
+
+  # LM_EnumPages
+  for p in LM_EnumPages():
+    echo p.base.toHex(), "-", p.`end`.toHex()
+
+  # LM_EnumPagesEx
+  for p in LM_EnumPagesEx(procbuf.addr):
+    echo testProcess, ": ", p.base.toHex(), "-", p.`end`.toHex()

@@ -12,6 +12,7 @@ type
   lm_byte_t* = uint8
   lm_void_t* = void
   lm_string_t* = cstring
+  lm_prot_t* = uint32
 
 const
   LM_FALSE*: lm_bool_t = 0
@@ -42,6 +43,14 @@ type
     name*: cstring
     address*: lm_address_t
 
+  lm_page_t* = object
+    base*: lm_address_t
+    `end`*: lm_address_t
+    size*: lm_size_t
+    prot*: lm_prot_t
+
+
+
 proc getName*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.name[0].unsafeAddr)
 proc getPath*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.path[0].unsafeAddr)
 
@@ -50,6 +59,7 @@ var
   moduleList: seq[lm_module_t]
   threadList: seq[lm_thread_t]
   symbolList: seq[lm_symbol_t]
+  pageList: seq[lm_page_t]
 
 {.push dynlib: libName, cdecl, importc.}
 proc LM_EnumProcesses*(callback: proc(pproc: ptr lm_process_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
@@ -71,6 +81,11 @@ proc LM_LoadModuleEx*(pproc: ptr lm_process_t, path: lm_string_t, modbuf: ptr lm
 proc LM_UnloadModule*(pmod: ptr lm_module_t): lm_bool_t
 proc LM_UnloadModuleEx*(pproc: ptr lm_process_t, pmod: ptr lm_module_t): lm_bool_t
 proc LM_EnumSymbols*(pmod: ptr lm_module_t, callback: proc(psymbol: ptr lm_symbol_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
+proc LM_FindSymbolAddress*(pmod: ptr lm_module_t, name: cstring): lm_address_t
+proc LM_EnumPages*(callback: proc(ppage: ptr lm_page_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
+proc LM_EnumPagesEx*(pproc: ptr lm_process_t, callback: proc(ppage: ptr lm_page_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
+proc LM_GetPage*(`addr`: lm_address_t, pagebuf: ptr lm_page_t): lm_bool_t
+proc LM_GetPageEx*(pproc: ptr lm_process_t, `addr`: lm_address_t, pagebuf: ptr lm_page_t): lm_bool_t
 {.pop.}
 
 # Callbacks / Iterators helpers
@@ -89,6 +104,10 @@ proc enumModulesCallback(pmod: ptr lm_module_t, arg: pointer): lm_bool_t =
 
 proc enumSymbolsCallback(psymbol: ptr lm_symbol_t, arg: pointer): lm_bool_t =
   symbolList.add(psymbol[])
+  result = LM_TRUE
+
+proc enumPagesCallback(ppage: ptr lm_page_t, arg: pointer): lm_bool_t =
+  pageList.add(ppage[])
   result = LM_TRUE
 
 iterator LM_EnumProcesses*: lm_process_t =
@@ -126,3 +145,15 @@ iterator LM_EnumSymbols*(pmod: ptr lm_module_t): lm_symbol_t =
   if LM_EnumSymbols(pmod, enumSymbolsCallback, nil) == LM_TRUE:
     for s in symbolList:
       yield s
+
+iterator LM_EnumPages*: lm_page_t =
+  pageList.setLen(0)
+  if LM_EnumPages(enumPagesCallback, nil) == LM_TRUE:
+    for p in pageList:
+      yield p
+
+iterator LM_EnumPagesEx*(pproc: ptr lm_process_t): lm_page_t =
+  pageList.setLen(0)
+  if LM_EnumPagesEx(pproc, enumPagesCallback, nil) == LM_TRUE:
+    for p in pageList:
+      yield p
