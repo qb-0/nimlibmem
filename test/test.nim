@@ -1,4 +1,6 @@
-import libmem, strutils
+import 
+  ../libmem, 
+  strutils, os
 
 const testProcess: cstring = "Discord"
 
@@ -57,3 +59,5 @@ if isMainModule:
   if LM_FindModuleEx(procbuf.addr, "libc.so.6", modbuf.addr) == LM_TRUE:
     echo modbuf.getName, ": ", modbuf.base.toHex()
 
+  # LM_LoadModule
+  discard LM_LoadModule((getCurrentDir() & "/libtestlib.so").cstring, modbuf.addr)
