@@ -1,3 +1,9 @@
+#[
+  Issues:
+    - LM_EnumThreadsEx returns wrong id's since it switched from LM_EnumThreadIds
+    - LM_UnloadModule returns false and doesn't unloads the module
+]#
+
 import 
   ../libmem, 
   strutils, os
