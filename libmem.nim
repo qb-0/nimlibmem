@@ -89,6 +89,20 @@ proc LM_ReadMemory*(src: lm_address_t, dst: ptr lm_byte_t, size: lm_size_t): lm_
 proc LM_ReadMemoryEx*(pproc: ptr lm_process_t, src: lm_address_t, dst: ptr lm_byte_t, size: lm_size_t): lm_size_t
 proc LM_WriteMemory*(dst: lm_address_t, src: lm_bytearr_t, size: lm_size_t): lm_size_t
 proc LM_WriteMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, src: lm_bytearr_t, size: lm_size_t): lm_size_t
+proc LM_SetMemory*(dst: lm_address_t, `byte`: lm_byte_t, size: lm_size_t): lm_size_t
+proc LM_SetMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, `byte`: lm_byte_t, size: lm_size_t): lm_size_t
+proc LM_ProtMemory*(`addr`: lm_address_t, size: lm_size_t, prot: lm_prot_t, oldprot: ptr lm_prot_t): lm_bool_t
+proc LM_ProtMemoryEx*(pproc: ptr lm_process_t, `addr`: lm_address_t, size: lm_size_t, prot: lm_prot_t, oldprot: ptr lm_prot_t): lm_bool_t
+proc LM_AllocMemory*(size: lm_size_t, prot: lm_prot_t): lm_address_t
+proc LM_AllocMemoryEx*(pproc: ptr lm_process_t, size: lm_size_t, prot: lm_prot_t): lm_address_t
+proc LM_FreeMemory*(alloc: lm_address_t, size: lm_size_t): lm_bool_t
+proc LM_FreeMemoryEx*(pproc: ptr lm_process_t, alloc: lm_address_t, size: lm_size_t): lm_bool_t
+proc LM_DataScan*(data: lm_bytearr_t, size: lm_size_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
+proc LM_DataScanEx*(pproc: ptr lm_process_t, data: lm_bytearr_t, size: lm_size_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
+proc LM_PatternScan*(pattern: lm_bytearr_t, mask: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
+proc LM_PatternScanEx*(pproc: ptr lm_process_t, pattern: lm_bytearr_t, mask: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
+proc LM_SigScan*(sig: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
+proc LM_SigScanEx*(pproc: ptr lm_process_t, sig: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
 {.pop.}
 
 # Callbacks / Iterators helper functions

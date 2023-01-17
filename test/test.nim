@@ -123,3 +123,15 @@ if isMainModule:
   echo myFloat
   LM_WriteMemoryEx(procbuf.addr, stringAddr, "deadbeef")
   echo myString
+
+  var 
+    memBuf: array[0..3, byte]
+    memBufAddr = cast[lm_address_t](membuf.addr)
+
+  # LM_SetMemory
+  discard LM_SetMemory(memBufAddr, 99, 4)
+  echo memBuf
+
+  # LM_SetMemoryEx
+  discard LM_SetMemoryEx(procbuf.addr, memBufAddr, 11, 4)
+  echo memBuf
