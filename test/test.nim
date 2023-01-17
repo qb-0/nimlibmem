@@ -1,14 +1,15 @@
 #[
   Issues:
-    - LM_EnumThreadsEx returns wrong id's since it switched from LM_EnumThreadIds
-    - LM_UnloadModule returns false and doesn't unloads the module
+    - LM_UnloadModule returns false and doesn't unloads the module (linux issue)
 ]#
 
 import 
   ../libmem, 
   strutils, os
 
-const testProcess: cstring = "Discord"
+let
+  testProcess: cstring = "Discord"
+  currentProcess: cstring = splitPath(getAppFilename()).tail.cstring
 
 # Test
 if isMainModule:
@@ -68,17 +69,10 @@ if isMainModule:
   if LM_FindModuleEx(procbuf.addr, "libc.so.6", modbuf.addr) == LM_TRUE:
     echo modbuf.getName, ": ", modbuf.base.toHex()
 
-  # LM_LoadModulE
+  # LM_LoadModul
   discard LM_LoadModule((getCurrentDir() & "/libtestlib.so").cstring, modbuf.addr)
   
-  #[ 
-  Unloading currently doesn't works on linux
-  
-  echo "Unload: ", LM_UnloadModule(modbuf.addr) == LM_TRUE
-  var currentProcess: lm_process_t
-  discard LM_FindProcess("test", currentProcess.addr)
-  echo LM_UnloadModuleEx(currentProcess.addr, modbuf.addr) == LM_TRUE
-  ]#
+  # LM_EnumSymbols
   discard LM_FindModule("libmem.so", modbuf.addr)
   for s in LM_EnumSymbols(modbuf.addr):
     echo s.name, " ", s.address.toHex()
@@ -93,3 +87,39 @@ if isMainModule:
   # LM_EnumPagesEx
   for p in LM_EnumPagesEx(procbuf.addr):
     echo testProcess, ": ", p.base.toHex(), "-", p.`end`.toHex()
+
+  var 
+    myInt: int = 123123
+    myFloat: float = 37.12
+    myString: string = "hello"
+
+    intAddr = cast[lm_address_t](myInt.addr)
+    floatAddr = cast[lm_address_t](myFloat.addr)
+    stringAddr = cast[lm_address_t](myString.addr)
+
+  # LM_ReadMemory
+  echo LM_ReadMemory[int](intAddr)
+  echo LM_ReadMemory[float](floatAddr)
+  echo LM_ReadMemory[string](stringAddr)
+
+  # LM_ReadMemoryEx
+  discard LM_FindProcess(currentProcess, procbuf.addr)
+  echo LM_ReadMemoryEx[int](procbuf.addr, intAddr)
+  echo LM_ReadMemoryEx[float](procbuf.addr, floatAddr)
+  echo LM_ReadMemoryEx[string](procbuf.addr, stringAddr)
+
+  # LM_WriteMemory
+  LM_WriteMemory(intAddr, 1337)
+  echo myInt
+  LM_WriteMemory(floatAddr, 1337.1337)
+  echo myFloat
+  LM_WriteMemory(stringAddr, "foobar")
+  echo myString
+
+  # LM_WriteMemoryEx
+  LM_WriteMemoryEx(procbuf.addr, intAddr, 123)
+  echo myInt
+  LM_WriteMemoryEx(procbuf.addr, floatAddr, 123.123)
+  echo myFloat
+  LM_WriteMemoryEx(procbuf.addr, stringAddr, "deadbeef")
+  echo myString

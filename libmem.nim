@@ -13,6 +13,7 @@ type
   lm_void_t* = void
   lm_string_t* = cstring
   lm_prot_t* = uint32
+  lm_bytearr_t* = openArray[lm_byte_t]
 
 const
   LM_FALSE*: lm_bool_t = 0
@@ -84,9 +85,13 @@ proc LM_EnumPages*(callback: proc(ppage: ptr lm_page_t, arg: pointer): lm_bool_t
 proc LM_EnumPagesEx*(pproc: ptr lm_process_t, callback: proc(ppage: ptr lm_page_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_GetPage*(`addr`: lm_address_t, pagebuf: ptr lm_page_t): lm_bool_t
 proc LM_GetPageEx*(pproc: ptr lm_process_t, `addr`: lm_address_t, pagebuf: ptr lm_page_t): lm_bool_t
+proc LM_ReadMemory*(src: lm_address_t, dst: ptr lm_byte_t, size: lm_size_t): lm_size_t
+proc LM_ReadMemoryEx*(pproc: ptr lm_process_t, src: lm_address_t, dst: ptr lm_byte_t, size: lm_size_t): lm_size_t
+proc LM_WriteMemory*(dst: lm_address_t, src: lm_bytearr_t, size: lm_size_t): lm_size_t
+proc LM_WriteMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, src: lm_bytearr_t, size: lm_size_t): lm_size_t
 {.pop.}
 
-# Callbacks / Iterators helpers
+# Callbacks / Iterators helper functions
 
 proc enumProcessCallback(pproc: ptr lm_process_t, arg: pointer): lm_bool_t =
   processList.add(pproc[])
@@ -155,3 +160,35 @@ iterator LM_EnumPagesEx*(pproc: ptr lm_process_t): lm_page_t =
   if LM_EnumPagesEx(pproc, enumPagesCallback, nil) == LM_TRUE:
     for p in pageList:
       yield p
+
+# RWM helper functions
+
+proc LM_ReadMemory*[T](src: lm_address_t): T =
+  var
+    size = sizeof(T).lm_size_t
+    dstSeq = newSeq[lm_byte_t](size)
+  doAssert LM_ReadMemory(src, dstSeq[0].addr, size) == size
+  copyMem(result.addr, dstSeq[0].addr, size)
+
+proc LM_ReadMemoryEx*[T](pproc: ptr lm_process_t, src: lm_address_t): T =
+  var
+    size = sizeof(T).lm_size_t
+    dstSeq = newSeq[lm_byte_t](size)
+  doAssert LM_ReadMemoryEx(pproc, src, dstSeq[0].addr, size) == size
+  copyMem(result.addr, dstSeq[0].addr, size)
+
+proc LM_WriteMemory*(dst: lm_address_t, src: auto): lm_size_t {.discardable.} =
+  var
+    c = src
+    size = sizeof(src).lm_size_t
+    srcSeq = newSeq[lm_byte_t](size)
+  copyMem(srcSeq[0].addr, c.addr, size)
+  LM_WriteMemory(dst, srcSeq, size)
+
+proc LM_WriteMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, src: auto): lm_size_t {.discardable.} =
+  var
+    c = src
+    size = sizeof(src).lm_size_t
+    srcSeq = newSeq[lm_byte_t](size)
+  copyMem(srcSeq[0].addr, c.addr, size)
+  LM_WriteMemoryEx(pproc, dst, srcSeq, size)
