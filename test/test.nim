@@ -135,3 +135,10 @@ if isMainModule:
   # LM_SetMemoryEx
   discard LM_SetMemoryEx(procbuf.addr, memBufAddr, 11, 4)
   echo memBuf
+
+  let 
+    scanMe = [0x10.byte, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xA0]
+    scanMeAddr = cast[lm_address_t](scanMe[0].unsafeAddr)
+
+  echo LM_ReadMemory[array[0..9, byte]](scanMeAddr)
+  echo scanMeAddr.toHex(), " --> ", LM_DataScan(scanMe, scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()

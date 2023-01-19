@@ -13,7 +13,7 @@ type
   lm_void_t* = void
   lm_string_t* = cstring
   lm_prot_t* = uint32
-  lm_bytearr_t* = openArray[lm_byte_t]
+  lm_bytearr_t* = ptr lm_byte_t
 
 const
   LM_FALSE*: lm_bool_t = 0
@@ -105,7 +105,7 @@ proc LM_SigScan*(sig: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): l
 proc LM_SigScanEx*(pproc: ptr lm_process_t, sig: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
 {.pop.}
 
-# Callbacks / Iterators helper functions
+# Helper functions
 
 proc enumProcessCallback(pproc: ptr lm_process_t, arg: pointer): lm_bool_t =
   processList.add(pproc[])
@@ -197,7 +197,7 @@ proc LM_WriteMemory*(dst: lm_address_t, src: auto): lm_size_t {.discardable.} =
     size = sizeof(src).lm_size_t
     srcSeq = newSeq[lm_byte_t](size)
   copyMem(srcSeq[0].addr, c.addr, size)
-  LM_WriteMemory(dst, srcSeq, size)
+  LM_WriteMemory(dst, srcSeq[0].addr, size)
 
 proc LM_WriteMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, src: auto): lm_size_t {.discardable.} =
   var
@@ -205,4 +205,7 @@ proc LM_WriteMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, src: auto): l
     size = sizeof(src).lm_size_t
     srcSeq = newSeq[lm_byte_t](size)
   copyMem(srcSeq[0].addr, c.addr, size)
-  LM_WriteMemoryEx(pproc, dst, srcSeq, size)
+  LM_WriteMemoryEx(pproc, dst, srcSeq[0].addr, size)
+
+proc LM_DataScan*(data: openArray[lm_byte_t], `addr`: lm_address_t, scanSize: lm_size_t): lm_address_t =
+  LM_DataScan(data[0].unsafeAddr, data.len.lm_size_t, `addr`, scanSize)
