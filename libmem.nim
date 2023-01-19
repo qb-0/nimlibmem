@@ -209,3 +209,12 @@ proc LM_WriteMemoryEx*(pproc: ptr lm_process_t, dst: lm_address_t, src: auto): l
 
 proc LM_DataScan*(data: openArray[lm_byte_t], `addr`: lm_address_t, scanSize: lm_size_t): lm_address_t =
   LM_DataScan(data[0].unsafeAddr, data.len.lm_size_t, `addr`, scanSize)
+
+proc LM_DataScanEx*(pproc: ptr lm_process_t, data: openArray[lm_byte_t], `addr`: lm_address_t, scanSize: lm_size_t): lm_address_t =
+  LM_DataScanEx(pproc, data[0].unsafeAddr, data.len.lm_size_t, `addr`, scanSize)
+
+proc LM_PatternScan*(pattern: openArray[lm_byte_t], mask: lm_string_t, `addr`: lm_address_t, scanSize: lm_size_t): lm_address_t =
+  LM_PatternScan(pattern[0].unsafeAddr, mask, `addr`, scanSize)
+
+proc LM_PatternScanEx*(pproc: ptr lm_process_t, pattern: openArray[lm_byte_t], mask: lm_string_t, `addr`: lm_address_t, scanSize: lm_size_t): lm_address_t =
+  LM_PatternScanEx(pproc, pattern[0].unsafeAddr, mask, `addr`, scanSize)

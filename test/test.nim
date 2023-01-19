@@ -140,5 +140,14 @@ if isMainModule:
     scanMe = [0x10.byte, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xA0]
     scanMeAddr = cast[lm_address_t](scanMe[0].unsafeAddr)
 
+  # LM_*Scan
   echo LM_ReadMemory[array[0..9, byte]](scanMeAddr)
-  echo scanMeAddr.toHex(), " --> ", LM_DataScan(scanMe, scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
+  echo "ScanMeAddr: ", scanMeAddr.toHex()
+  echo "DataScan: ", LM_DataScan(scanMe, scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
+  echo "PatternScan: ", LM_PatternScan(scanMe, "xxxxxxxxxx", scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
+  echo "SigScan: ", LM_SigScan("10 20 30 40 50 60 70 80 90 A0", scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
+
+  # LM_*ScanEx
+  echo "DataScanEx: ", LM_DataScanEx(procbuf.addr, scanMe, scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
+  echo "PatternScanEx: ", LM_PatternScanEx(procbuf.addr, scanMe, "xxxxxxxxxx", scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
+  echo "SigScanEx: ", LM_SigScanEx(procbuf.addr, "10 20 30 40 50 60 70 80 90 A0", scanMeAddr - 0x50, scanMeAddr + 0x50).toHex()
