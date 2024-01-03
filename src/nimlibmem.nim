@@ -91,6 +91,7 @@ var
 {.push dynlib: libName, cdecl, importc.}
 proc LM_EnumProcesses*(callback: proc(pproc: ptr lm_process_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_GetProcess*(procbuf: ptr lm_process_t): lm_bool_t
+proc LM_GetProcessEx*(pid: lm_pid_t, procbuf: ptr lm_process_t): lm_bool_t
 proc LM_FindProcess*(procstr: lm_string_t, procbuf: ptr lm_process_t): lm_bool_t
 proc LM_IsProcessAlive*(pproc: ptr lm_process_t): lm_bool_t
 proc LM_GetSystemBits*: lm_size_t
