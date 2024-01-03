@@ -1,3 +1,8 @@
+#[
+  Issues:
+    - Can't find a solution to get the address of a nim function for hooking
+]#
+
 const 
   libName = when defined(linux): "liblibmem.so" elif defined(windows): "libmem.dll"
 
@@ -14,6 +19,10 @@ type
   lm_string_t* = cstring
   lm_prot_t* = uint32
   lm_bytearr_t* = ptr lm_byte_t
+  lm_uint_t* = uint
+  lm_uint64_t* = uint64
+  lm_uint16_t* = uint16
+  lm_uint8_t* = uint8
 
 const
   LM_FALSE*: lm_bool_t = 0
@@ -21,6 +30,14 @@ const
   LM_ADDRESS_BAD*: lm_address_t = 0
   LM_PATH_MAX*: lm_size_t = 512
   LM_INST_SIZE*: uint = 16
+  LM_PROT_NONE*: lm_prot_t = 0
+  LM_PROT_X*: lm_prot_t = 1 shl 0
+  LM_PROT_R*: lm_prot_t = 1 shl 1
+  LM_PROT_W*: lm_prot_t = 1 shl 2
+  LM_PROT_XR*: lm_prot_t = LM_PROT_X or LM_PROT_R
+  LM_PROT_XW*: lm_prot_t = LM_PROT_X or LM_PROT_W
+  LM_PROT_RW*: lm_prot_t = LM_PROT_R or LM_PROT_W
+  LM_PROT_XRW*: lm_prot_t = LM_PROT_X or LM_PROT_R or LM_PROT_W
 
 type
   lm_process_t* = object
@@ -49,6 +66,15 @@ type
     `end`*: lm_address_t
     size*: lm_size_t
     prot*: lm_prot_t
+
+  lm_inst_t* = object
+    id*: lm_uint_t
+    address*: lm_uint64_t
+    size*: lm_uint16_t
+    bytes*: array[LM_INST_SIZE, lm_uint8_t]
+    mnemonic*: array[32, lm_cchar_t]
+    opStr*: array[160, lm_cchar_t]
+    detail*: ptr pointer
 
 proc getName*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.name[0].unsafeAddr)
 proc getPath*(p: lm_process_t | lm_module_t): string = $cast[cstring](p.path[0].unsafeAddr)
@@ -103,6 +129,11 @@ proc LM_PatternScan*(pattern: lm_bytearr_t, mask: lm_string_t, `addr`: lm_addres
 proc LM_PatternScanEx*(pproc: ptr lm_process_t, pattern: lm_bytearr_t, mask: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
 proc LM_SigScan*(sig: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
 proc LM_SigScanEx*(pproc: ptr lm_process_t, sig: lm_string_t, `addr`: lm_address_t, scansize: lm_size_t): lm_address_t
+proc LM_HookCode*(`from`, to: lm_address_t, ptrampoline: ptr lm_address_t): lm_size_t
+proc LM_HookCodeEx*(pproc: ptr lm_process_t, `from`, to: lm_address_t, ptrampoline: ptr lm_address_t): lm_size_t
+proc LM_UnhookCode*(`from`, trampoline: lm_address_t, size: lm_size_t): lm_bool_t
+proc LM_UnhookCodeEx*(pproc: ptr lm_process_t, `from`, trampoline: lm_address_t, size: lm_size_t): lm_bool_t
+proc LM_Assemble*(code: lm_string_t, inst: ptr lm_inst_t): lm_bool_t
 {.pop.}
 
 # Helper functions
