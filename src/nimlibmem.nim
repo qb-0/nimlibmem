@@ -23,6 +23,7 @@ type
   lm_uint64_t* = uint64
   lm_uint16_t* = uint16
   lm_uint8_t* = uint8
+  lm_time_t* = uint64
 
 const
   LM_FALSE*: lm_bool_t = 0
@@ -44,6 +45,7 @@ type
     pid*: lm_pid_t
     ppid*: lm_pid_t
     bits*: lm_size_t
+    start_time*: lm_time_t
     path*: array[LM_PATH_MAX, lm_char_t]
     name*: array[LM_PATH_MAX, lm_char_t]
 
