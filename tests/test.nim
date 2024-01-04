@@ -72,3 +72,12 @@ test "LM_FindModule":
 
 test "LM_FindModuleEx":
   check LM_FindModuleEx(exprocBuf.addr, MODULE_NAME, modBuf.addr) == LM_TRUE
+
+test "LM_ReadMemory":
+  var myInt: int32 = 1337
+  check LM_ReadMemory[int32](cast[uint](myInt.addr)) == 1337
+
+test "LM_WriteMemory":
+  var myInt: float = 1337.0
+  check LM_WriteMemory(cast[uint](myInt.addr), 1338.0) != 0
+  echo myInt
