@@ -1,2 +1,2 @@
 if isMainModule:
-  echo "Module loaded successfully!"
+  echo "Module load successfully!"
