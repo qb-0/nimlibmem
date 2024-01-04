@@ -98,8 +98,8 @@ proc LM_GetSystemBits*: lm_size_t
 proc LM_EnumThreads*(callback: proc(pthr: ptr lm_thread_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_EnumThreadsEx*(pproc: ptr lm_process_t, callback: proc(pthr: ptr lm_thread_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_GetThread*(thrbuf: ptr lm_thread_t): lm_bool_t
-proc LM_GetThreadProcess*(pthr: ptr lm_thread_t, procbuf: ptr lm_process_t): lm_bool_t
 proc LM_GetThreadEx*(pproc: ptr lm_process_t, thrbuf: ptr lm_thread_t): lm_bool_t
+proc LM_GetThreadProcess*(pthr: ptr lm_thread_t, procbuf: ptr lm_process_t): lm_bool_t
 proc LM_EnumModules*(callback: proc(pmod: ptr lm_module_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_EnumModulesEx*(pproc: ptr lm_process_t, callback: proc(pmod: ptr lm_module_t, arg: pointer): lm_bool_t, arg: pointer): lm_bool_t
 proc LM_FindModule*(name: lm_string_t, modbuf: ptr lm_module_t): lm_bool_t
